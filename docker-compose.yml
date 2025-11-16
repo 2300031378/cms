@@ -1,0 +1,54 @@
+version: "3.9"
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: acme_mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 2106
+      MYSQL_DATABASE: acme_db
+    ports:
+      - "3307:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - acme_network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-p2106"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: ./backend
+    container_name: acme_backend
+    depends_on:
+      mysql:
+        condition: service_healthy
+    environment:
+      DB_HOST: mysql
+      DB_PORT: 3306
+      DB_NAME: acme_db
+      DB_USER: root
+      DB_PASSWORD: 2106
+    ports:
+      - "8082:8082"
+    networks:
+      - acme_network
+
+  frontend:
+    build:
+      context: ./storyspark-content-hub-main
+      dockerfile: Dockerfile
+    container_name: acme_frontend
+    ports:
+      - "3000:80"
+    networks:
+      - acme_network
+
+volumes:
+  mysql_data:
+
+networks:
+  acme_network:
