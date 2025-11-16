@@ -15,6 +15,16 @@ pipeline {
             }
         }
 
+        stage('Clean Old Docker Containers') {
+            steps {
+                bat '''
+                echo Stopping and removing old containers...
+                docker stop acme_mysql acme_backend acme_frontend 2>NUL || true
+                docker rm acme_mysql acme_backend acme_frontend 2>NUL || true
+                '''
+            }
+        }
+
         stage('Backend Build') {
             steps {
                 bat '''
@@ -37,7 +47,7 @@ pipeline {
         stage('Docker Build') {
             steps {
                 bat '''
-                docker compose build
+                docker compose build --no-cache
                 '''
             }
         }
@@ -45,7 +55,8 @@ pipeline {
         stage('Deploy') {
             steps {
                 bat '''
-                docker compose down
+                echo Bringing application UP...
+                docker compose down --remove-orphans
                 docker compose up -d
                 '''
             }
@@ -58,4 +69,5 @@ pipeline {
         }
     }
 }
+
 
