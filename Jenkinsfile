@@ -17,13 +17,16 @@ pipeline {
 
         stage('Backend Build') {
             steps {
-                sh 'cd backend && mvn -q -DskipTests clean package'
+                bat '''
+                cd backend
+                mvn -q -DskipTests clean package
+                '''
             }
         }
 
         stage('Frontend Build') {
             steps {
-                sh '''
+                bat '''
                 cd storyspark-content-hub-main
                 npm install
                 npm run build
@@ -33,13 +36,18 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-                sh 'docker compose build'
+                bat '''
+                docker compose build
+                '''
             }
         }
 
         stage('Deploy') {
             steps {
-                sh 'docker compose down && docker compose up -d'
+                bat '''
+                docker compose down
+                docker compose up -d
+                '''
             }
         }
     }
@@ -50,3 +58,4 @@ pipeline {
         }
     }
 }
+
